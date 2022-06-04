@@ -1,18 +1,37 @@
-let State = () => {
-    var s = {}
+let Store = () => {
+    var cache = {}
     return {
-        g: (p) => p in s ? s[p] : 'NA',
-        s: (p, v) => {
-            s[p] = v; render()
+        get: (key) => key in cache ?
+            cache[key] :
+            'NA',
+        set: (key, value) => {
+            cache[key] = value;
+            render()
         },
-        c: s
+        all: cache
     }
-}, 
-$ = (t, p = document) => p.querySelectorAll(t), s = State(),_l=[],isArr=a=>Array.isArray(a),
-    render= (l = null) => {
-        (l != null) && l.forEach(i => _l.push({ id: i[0], c: i[1] }));
-        _l.forEach(({ id, c }) => $(`#${id}`)[0].innerHTML= isArr(c) ? c.map(x => x(s.c)).join("") : c(s.c))
+},
+    $ = (tag, parent = document) => parent.querySelectorAll(tag),
+    store = Store(),
+    _list = [],
+    isArray = a => Array.isArray(a),
+    render = (UI_Mappings = null) => {
+        (UI_Mappings != null) &&
+            UI_Mappings.forEach(pair =>
+                _list.push({
+                    element_ID: pair[0],
+                    components: pair[1]
+                })
+            );
+        _list.forEach(({ element_ID, components }) =>
+            $(`#${element_ID}`)[0].innerHTML = isArray(components) ?
+                components
+                    .map(component => component(store.all))
+                    .join("") :
+                components(store.all))
     },
-    state= (p, v = null) => v == null ? s.g(p) : s.s(p, v),
-    action= (t, a) => window[t] = a
-export {render,state,action,$}
+    state = (key, value = null) => value == null ?
+        store.get(key) :
+        store.set(key, value),
+    action = (tag, func) => window[tag] = func
+export { render, state, action, $ }
