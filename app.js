@@ -1,33 +1,34 @@
-import { state, action, render, $ } from './j.js'
+import {state,action,render} from './indexV2.js'
 
-let TodoItem = (state) => state
-  && state.todos.map((todo, index) =>
-    `<li 
-        key='${index}' 
-        onclick='Remove(${index})'
-      >${todo}</li>`
-  ).join("")
-let newItem = () => `
-  <input id="newItem" onchange='Add()'>
-  <button onclick="Add()">Add</button>  
+let pomodoroLength = 25*60 // 25 minutes in seconds
+let Message = ({message}) => `<p class='message'>${message}</p>`
+let TimeLeft = ({timeLeft}) => `
+  <p class='timeLeft'>
+    ${Math.round(timeLeft/60-0.5,0)} m ${timeLeft%60} s
+  </p>
 `
+let Reset =  `<button onclick='Reset()'>Reset</button>`
+let Pomodoro = (state) => `
+  ${Message(state)}
+  ${TimeLeft(state)}
+  ${Reset}
+`
+state('message','')
+state('timeLeft',pomodoroLength)
 
-state('todos', [])
-
-action('Add', () => {
-  let addedItem = $('#newItem')[0].value
-  let prevState = state('todos')
-  prevState[prevState.length] = addedItem
-  state('todos', prevState)
-  $('#newItem')[0].focus()
+action('Reset',()=>{
+  state('message','')
+  state('timeLeft',pomodoroLength)
 })
 
-action('Remove', (index) => {
-  let prevState = state('todos')
-  delete prevState[index]
-  state('todos', prevState)
+action('Refresh',()=>{
+  let time = state('timeLeft')
+  if(time>0){
+    state('timeLeft',time-1)
+  }else{
+    state('message','Pomodoro ends')
+  }
 })
 
-render([
-  ['app', [newItem, TodoItem]]
-])
+setInterval(Refresh,1000)
+render(['app',Pomodoro])
