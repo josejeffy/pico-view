@@ -1,0 +1,10 @@
+let _store = {}, renderlist = [],
+    render = (id,component) => {
+        id && component && renderlist.push({id,component}),
+        renderlist.forEach(({ id, component }) =>
+            document.getElementById(id).innerHTML = component(_store))
+    },
+    state = (key, value) => (value == null && _store[key]) ||
+        ((_store[key] = value) && render()),
+    action = (tag, func) => window[tag] = func
+export { render, state, action }
